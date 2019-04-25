@@ -21,5 +21,6 @@
         <mapper resource="com/edison/mapper/CommentMapper.xml"/>
         <mapper resource="com/edison/mapper/TblDeptMapper.xml"/>
         <mapper resource="com/edison/mapper/TblEmpMapper.xml"/>
+        <mapper resource="com/edison/mapper/extend/BlogExtMapper.xml"/>
     </mappers>
 </configuration>
