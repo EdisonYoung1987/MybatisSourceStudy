@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edison.dao.extend.BlogExtMapper">
+  <resultMap id="BaseResultMap" type="com.edison.entity.Blog">
+    <id column="bid" jdbcType="INTEGER" property="bid" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="author_id" jdbcType="INTEGER" property="authorId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    bid, name, author_id
+  </sql>
+  <select id="selectByAuthorId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from blog
+    where author_id = #{authorId,jdbcType=INTEGER}
+  </select>
+</mapper>
