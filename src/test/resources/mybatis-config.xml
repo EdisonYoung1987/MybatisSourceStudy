@@ -4,6 +4,18 @@
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
     <properties resource="dataSource.properties"/>
+
+    <settings>
+        <!-- 打印查询语句 -->
+        <setting name="logImpl" value="STDOUT_LOGGING" />
+    </settings>
+
+    <!--别名，为了避免Cause: org.apache.ibatis.type.TypeException: Could not resolve type alias 'Blog'.
+       这样可以在mapper.xml中直接使用parameterType="Blog"-->
+    <typeAliases>
+        <package name="com.edison.entity"/>
+    </typeAliases>
+
     <environments default="development">
         <environment id="development">
             <transactionManager type="JDBC"/>
@@ -15,6 +27,7 @@
             </dataSource>
         </environment>
     </environments>
+
     <mappers>
         <mapper resource="com/edison/mapper/BlogMapper.xml"/>
         <mapper resource="com/edison/mapper/AuthorMapper.xml"/>

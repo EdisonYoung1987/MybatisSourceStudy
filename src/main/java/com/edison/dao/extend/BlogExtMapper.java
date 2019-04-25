@@ -8,4 +8,7 @@ import java.util.List;
 public interface BlogExtMapper extends BlogMapper {
     /**根据authorId返回所有blog*/
     List<Blog> selectByAuthorId(Integer authorId);
+
+    /**传入bean作为参数*/
+    Blog selectByBean(Blog blog);
 }

@@ -15,4 +15,11 @@
     from blog
     where author_id = #{authorId,jdbcType=INTEGER}
   </select>
+
+    <select id="selectByBean" parameterType="Blog" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from blog
+        where bid=#{bid}
+    </select>
 </mapper>
