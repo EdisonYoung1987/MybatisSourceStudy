@@ -24,7 +24,7 @@ public class ConnectionUtil {
 		property.load(ClassLoader.getSystemResourceAsStream("dataSource.properties"));
 		driver=property.getProperty("driver");
 		url=property.getProperty("url");
-		user=property.getProperty("user");	
+		user=property.getProperty("username");
 		password=property.getProperty("password");	
 		Class.forName(driver);
 		System.out.println("初始化init()完成");

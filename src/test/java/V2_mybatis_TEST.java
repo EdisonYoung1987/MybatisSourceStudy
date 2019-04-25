@@ -23,8 +23,13 @@ public class V2_mybatis_TEST {
         SqlSession session = sqlSessionFactory.openSession();
         try {
             BlogMapper mapper = session.getMapper(BlogMapper.class);
-            Blog blog = mapper.selectByPrimaryKey(101);
-        } finally {
+            Blog blog = mapper.selectByPrimaryKey(1);
+            if (blog == null) {
+                System.out.println("没有该用户");
+            } else {
+                System.out.println(blog.getBid() + "-" + blog.getAuthorId() + "-" + blog.getName());
+            }
+        }finally {
             session.close();
         }
     }

@@ -6,6 +6,7 @@ import com.edison.v1_jdbc.util.ConnectionUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,11 +29,22 @@ public class AuthorDao {
 		}
 		
 		try{
+			//使用prepareStatement:预处理语句将被预先编译好，这条预编译的sql查询语句能
+			//在将来的查询中重用，这样一来，它比Statement对象生成的查询速度更快。
+			//适合重复执行的sql，它第一次执行慢
+			//提供Batch操作功能
 			statement=con.prepareStatement(sql);
 			statement.setString(1, "%"+forumName+"%"); //like语句只能把%放这，不然会报错：无效的列索引
 			rs=statement.executeQuery();
+
 			forumList=new ArrayList<Author>();
-			
+
+			//使用Statement，sql要提前拼接好，容易被sql注入
+//			Statement st=con.createStatement();
+//			sql="SELECT * FROM AUTHOR WHERE AUTHOR_NAME LIKE ";
+//			sql=sql+"'%"+forumName+"%'";
+//			rs=st.executeQuery(sql);
+
 			while(rs.next()){
 				Author forum=new Author();
 				forum.setAuthorId(rs.getInt(1));
