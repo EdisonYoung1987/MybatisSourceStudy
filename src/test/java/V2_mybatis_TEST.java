@@ -3,6 +3,7 @@ import com.edison.dao.extend.BlogExtMapper;
 import com.edison.entity.Blog;
 import com.edison.entity.extend.Qry;
 import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
@@ -112,6 +113,24 @@ public class V2_mybatis_TEST {
         }catch (Exception e) {
             e.printStackTrace();
         }finally {
+            session.close();
+        }
+    }
+
+    @Test
+    public void C_insertBatch(){
+        //制定执行器类型为BATCH,其他的还有SIMPLE\REUSER,关闭自动提交
+        SqlSession session = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
+        try {
+            List<Blog> blogs=new ArrayList<>(16);
+            blogs.add(new Blog(5,"a",1008));
+            blogs.add(new Blog(6,"ab",1008));
+            blogs.add(new Blog(7,"a",1001));
+
+            BlogMapper mapper = session.getMapper(BlogMapper.class);
+            mapper.insert()
+        }finally {
+            session.commit();
             session.close();
         }
     }

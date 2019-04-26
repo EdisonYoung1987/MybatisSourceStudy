@@ -1,6 +1,14 @@
 package com.edison.entity;
 
 public class Blog {
+    public Blog() {
+    }
+    public Blog(Integer bid, String name, Integer authorId) {
+        this.bid = bid;
+        this.name = name;
+        this.authorId = authorId;
+    }
+
     private Integer bid;
 
     private String name;

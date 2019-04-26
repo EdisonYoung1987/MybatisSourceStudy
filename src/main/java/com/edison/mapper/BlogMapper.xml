@@ -3,7 +3,7 @@
 <mapper namespace="com.edison.dao.BlogMapper">
   <resultMap id="BaseResultMap" type="com.edison.entity.Blog">
     <id column="bid" jdbcType="INTEGER" property="bid" />
-    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="name" jdbcType="VARCHAR" property="name" typeHandler="com.edison.handler.MyStringTypeHandler"/>
     <result column="author_id" jdbcType="INTEGER" property="authorId" />
   </resultMap>
   <sql id="Base_Column_List">

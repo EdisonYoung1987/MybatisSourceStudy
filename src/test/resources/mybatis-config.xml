@@ -3,11 +3,17 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
-    <properties resource="dataSource.properties"/>
+    <properties resource="dataSource.properties">
+        <!-- 启用默认值特性，即${value:default} -->
+        <property name="org.apache.ibatis.parsing.PropertyParser.enable-default-value" value="true"/>
+    </properties>
 
     <settings>
         <!-- 打印查询语句 -->
         <setting name="logImpl" value="STDOUT_LOGGING" />
+        <setting name="localCacheScope" value="STATEMENT"/>
+        <!--避免插入字段值为null时抛异常-->
+        <setting name="jdbcTypeForNull" value="NULL"/>
     </settings>
 
     <!--别名，为了避免Cause: org.apache.ibatis.type.TypeException: Could not resolve type alias 'Blog'.
@@ -16,8 +22,19 @@
         <package name="com.edison.entity"/>
     </typeAliases>
 
+    <!--对结果集的某个类型字段进行处理，比如返回的null处理为""或者Bigdecimal.ZERO-->
+    <typeHandlers>
+        <package name="com.edison.handler"/>
+    </typeHandlers>
+
+    <!--自定义mybatis创建对象的工厂，可以增加一些前后处理，或者设置属性：可能会被
+    TypeHandler覆盖或者被ResultSetHandler覆盖为查询出来的值-->
+    <objectFactory type="com.edison.factory.MyObjectFactory"></objectFactory>
+
     <environments default="development">
         <environment id="development">
+            <!--事务管理：JDBC，则会使用 Connection 对象的 commit()、rollback()、close()
+管理事务。如果配置成 MANAGED，会把事务交给容器来管理-->
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
                 <property name="driver" value="${driver}"/>
