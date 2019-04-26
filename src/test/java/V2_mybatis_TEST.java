@@ -1,6 +1,7 @@
 import com.edison.dao.BlogMapper;
 import com.edison.dao.extend.BlogExtMapper;
 import com.edison.entity.Blog;
+import com.edison.entity.extend.Qry;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -12,7 +13,11 @@ import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING) //按方法名称顺序执行
 public class V2_mybatis_TEST {
@@ -68,7 +73,50 @@ public class V2_mybatis_TEST {
         }
     }
 
-    /**测试逻辑分页*/
+    /**用于测试动态sql中的foreach，其他的如if、where、set等直接参考笔记就可以了*/
     @Test
-    public void
+    public void B_Foreach(){
+        SqlSession session = sqlSessionFactory.openSession();
+        try {
+            System.out.println("测试foreach动态sql");
+            List<Integer> bidList = new ArrayList<>();
+            bidList.add(1);
+            bidList.add(2);
+            bidList.add(3);
+            BlogExtMapper extMapper = session.getMapper(BlogExtMapper.class);
+            List<Blog> blogs = extMapper.selectByBidList(bidList);
+            System.out.println("查询到记录条数：" + blogs.size());
+
+            //foreach的map形式
+            List<Integer> authorIdList = new ArrayList<>();
+            authorIdList.add(1001);
+            authorIdList.add(1008);
+
+            Map<String, List<Integer>> map = new HashMap<>(4);
+            map.put("bids",bidList);
+            map.put("authorIds",authorIdList);
+
+            blogs = extMapper.selectByBidMap(map);
+            System.out.println("查询到记录条数：" + blogs.size());
+
+            //foreach：多个不同类型List,多个list
+            List<String> nameList=new ArrayList<>();
+            nameList.add("新增消息");
+            nameList.add("MyBatis源码分析");
+            Qry qry=new Qry();
+            qry.setIntList(bidList);
+            qry.setStringList(nameList);
+            blogs=extMapper.selectByBidNmMap(qry);
+            System.out.println("查询到记录条数：" + blogs.size());
+
+        }catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            session.close();
+        }
+    }
+
+//    /**测试逻辑分页*/
+//    @Test
+//    public void
 }

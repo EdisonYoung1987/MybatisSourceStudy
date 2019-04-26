@@ -22,4 +22,45 @@
         from blog
         where bid=#{bid}
     </select>
+
+    <!--FOREACH中item对应的变量代表值，index对应的变量是下标或者map的key-->
+    <select id="selectByBidList" parameterType="ArrayList" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from blog   where bid IN
+        <foreach item="value" index="ind" collection="list"
+                 open="(" separator="," close=")">
+            #{value}
+        </foreach>
+    </select>
+
+    <select id="selectByBidMap" parameterType="Map" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from blog   where bid IN
+            <foreach item="value" index="key" collection="bids"
+                     open="(" separator="," close=")">
+                #{value}
+            </foreach>
+        and author_id IN
+            <foreach item="value" index="key" collection="authorIds"
+                     open="(" separator="," close=")">
+                 #{value}
+            </foreach>
+    </select>
+
+    <select id="selectByBidNmMap" parameterType="Qry" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from blog   where bid IN
+        <foreach item="value" index="key" collection="intList"
+                 open="(" separator="," close=")">
+            #{value}
+        </foreach>
+        and name IN
+        <foreach item="value" index="key" collection="stringList"
+                 open="(" separator="," close=")">
+            #{value}
+        </foreach>
+    </select>
 </mapper>
