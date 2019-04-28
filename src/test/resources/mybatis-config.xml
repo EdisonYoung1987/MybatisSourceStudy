@@ -14,6 +14,8 @@
         <setting name="localCacheScope" value="STATEMENT"/>
         <!--避免插入字段值为null时抛异常-->
         <setting name="jdbcTypeForNull" value="NULL"/>
+        <!-- 延迟加载的全局开关。当开启时，所有关联对象都会延迟加载。默认 false 用于嵌套查询的关联对象的查询时机 -->
+        <setting name="lazyLoadingEnabled" value="true"/>
     </settings>
 
     <!--别名，为了避免Cause: org.apache.ibatis.type.TypeException: Could not resolve type alias 'Blog'.

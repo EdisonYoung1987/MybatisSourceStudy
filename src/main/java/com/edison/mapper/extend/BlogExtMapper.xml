@@ -63,4 +63,60 @@
             #{value}
         </foreach>
     </select>
+
+    <!--嵌套结果查询，即返回的是一个实体类组合，比如一个blog对应一个author-->
+    <!-- 根据文章查询作者，一对一，嵌套结果，无N+1问题 -->
+    <resultMap id="BlogWithAuthorResultMap" type="BlogAndAuthor">
+        <id column="bid" property="bid" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <!-- 联合查询，将author的属性映射到ResultMap -->
+        <association property="author" javaType="Author">
+            <id column="author_id" property="authorId"/>
+            <result column="author_name" property="authorName"/>
+        </association>
+    </resultMap>
+    <select id="selectBlogWithAuthorResult" resultMap="BlogWithAuthorResultMap" >
+        select b.bid, b.name, b.author_id, a.author_id , a.author_name
+        from blog b
+        inner join author a
+        on b.author_id=a.author_id
+        where b.bid = #{bid, jdbcType=INTEGER}
+    </select>
+
+
+    <!-- 根据文章查询作者，一对一，嵌套查询，存在N+1问题，可通过开启延迟加载解决 -->
+    <resultMap id="BlogWithAuthorQueryMap" type="BlogAndAuthor">
+        <id column="bid" property="bid" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <association property="author" javaType="Author"
+                     column="author_id" select="selectAuthor"/> <!-- selectAuthor 定义在下面-->
+    </resultMap>
+    <select id="selectBlogWithAuthorQuery" resultMap="BlogWithAuthorQueryMap" >
+        select b.bid, b.name, b.author_id, a.author_id , a.author_name
+        from blog b
+        left join author a
+        on b.author_id=a.author_id
+        where b.bid = #{bid, jdbcType=INTEGER}
+    </select>
+
+    <!-- 嵌套查询 -->
+    <select id="selectAuthor" parameterType="int" resultType="Author">
+        select author_id authorId, author_name authorName
+        from author where author_id = #{authorId}
+    </select>
+
+    <!--嵌套结果：1对多-->
+    <!--  查询文章带评论的结果（一对多） -->
+    <resultMap id="BlogWithCommentMap" type="BlogAndComment" extends="BaseResultMap" >
+        <collection property="comment" ofType="Comment">
+            <id column="comment_id" property="commentId" />
+            <result column="content" property="content" />
+        </collection>
+    </resultMap>
+    <select id="selectBlogWithCommentById" resultMap="BlogWithCommentMap" >
+        select b.bid, b.name, b.author_id authorId, c.comment_id commentId, c.content
+        from blog b, comment c
+        where b.bid = c.bid
+        and b.bid = #{bid}
+    </select>
 </mapper>

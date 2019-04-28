@@ -1,6 +1,8 @@
 import com.edison.dao.BlogMapper;
 import com.edison.dao.extend.BlogExtMapper;
 import com.edison.entity.Blog;
+import com.edison.entity.extend.BlogAndAuthor;
+import com.edison.entity.extend.BlogAndComment;
 import com.edison.entity.extend.Qry;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.ExecutorType;
@@ -14,7 +16,6 @@ import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -117,23 +118,88 @@ public class V2_mybatis_TEST {
         }
     }
 
+    /**测试mybatis的批量插入*/
     @Test
     public void C_insertBatch(){
         //制定执行器类型为BATCH,其他的还有SIMPLE\REUSER,关闭自动提交
+//        SqlSession session = sqlSessionFactory.openSession(ExecutorType.SIMPLE,false);
+//        SqlSession session = sqlSessionFactory.openSession(ExecutorType.REUSE,false);
         SqlSession session = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
+
         try {
             List<Blog> blogs=new ArrayList<>(16);
             blogs.add(new Blog(5,"a",1008));
             blogs.add(new Blog(6,"ab",1008));
             blogs.add(new Blog(7,"a",1001));
+            blogs.add(new Blog(8,"ad",1001));
 
             BlogMapper mapper = session.getMapper(BlogMapper.class);
-            mapper.insert()
-        }finally {
+            int i=1;
+            for(Blog blog: blogs) {
+                mapper.insert(blog);
+                if((i++)%2==0 ){
+                    Thread.sleep(5000);
+                    session.flushStatements();//批量提交一部分sql
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
             session.commit();
             session.close();
         }
     }
+
+    /**嵌套查询、关联查询：1对1或1对多*/
+    /**
+     * 一对一，一篇文章对应一个作者：查询到blog后，马上用blog.author_id去查询author信息；
+     * 如果参数设置了延迟加载lazyLoadingEnabled，则会在使用author时再次发送sql
+     * 嵌套查询，会有N+1的问题:sql语句不是一次性发送的
+     */
+    @Test
+    public void testSelectBlogWithAuthorQuery() throws IOException {
+        SqlSession session = sqlSessionFactory.openSession();
+        BlogExtMapper mapper = session.getMapper(BlogExtMapper.class);
+
+        BlogAndAuthor blog = mapper.selectBlogWithAuthorQuery(1);
+        System.out.println("-----------:"+blog.getClass());
+        // 如果开启了延迟加载，会在使用的时候才发出SQL
+        // equals,clone,hashCode,toString也会触发延迟加载
+        // System.out.println("-----------调用toString方法:"+blog);
+        System.out.println("-----------getAuthor:"+blog.getAuthor().toString());
+        // 如果 aggressiveLazyLoading = true ，也会触发加载，否则不会
+        //System.out.println("-----------getName:"+blog.getName());
+    }
+
+    /**
+     * 一对多关联查询：一篇文章对应多条评论
+     * @throws IOException
+     */
+    @Test
+    public void testSelectBlogWithComment() throws IOException {
+        SqlSession session = sqlSessionFactory.openSession();
+        try {
+            BlogExtMapper mapper = session.getMapper(BlogExtMapper.class);
+            BlogAndComment blog = mapper.selectBlogWithCommentById(1);
+            System.out.println(blog);
+        } finally {
+            session.close();
+        }
+    }
+
+    /**
+     * 一对一，一篇文章对应一个作者
+     * 嵌套结果，不存在N+1问题:
+     */
+    @Test
+    public void testSelectBlogWithAuthorResult() throws IOException {
+        SqlSession session = sqlSessionFactory.openSession();
+        BlogExtMapper mapper = session.getMapper(BlogExtMapper.class);
+
+        BlogAndAuthor blog = mapper.selectBlogWithAuthorResult(2);
+        System.out.println("-----------:"+blog);
+    }
+
 
 //    /**测试逻辑分页*/
 //    @Test
