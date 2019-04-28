@@ -5,6 +5,7 @@ import com.edison.entity.Blog;
 import com.edison.entity.extend.BlogAndAuthor;
 import com.edison.entity.extend.BlogAndComment;
 import com.edison.entity.extend.Qry;
+import org.apache.ibatis.session.RowBounds;
 
 import java.util.List;
 import java.util.Map;
@@ -41,4 +42,7 @@ public interface BlogExtMapper extends BlogMapper {
 
     /**根据blog的id查询blog及关联的评论*/
     public BlogAndComment selectBlogWithCommentById(Integer bid);
+
+    /**逻辑分页RowBounds*/
+    public List<Blog> selectByAuthorId(Integer authorId, RowBounds rb);
 }

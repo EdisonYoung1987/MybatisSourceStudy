@@ -5,10 +5,7 @@ import com.edison.entity.extend.BlogAndAuthor;
 import com.edison.entity.extend.BlogAndComment;
 import com.edison.entity.extend.Qry;
 import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.ibatis.session.*;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -157,7 +154,7 @@ public class V2_mybatis_TEST {
      * 嵌套查询，会有N+1的问题:sql语句不是一次性发送的
      */
     @Test
-    public void testSelectBlogWithAuthorQuery() throws IOException {
+    public void D_testSelectBlogWithAuthorQuery() throws IOException {
         SqlSession session = sqlSessionFactory.openSession();
         BlogExtMapper mapper = session.getMapper(BlogExtMapper.class);
 
@@ -169,6 +166,7 @@ public class V2_mybatis_TEST {
         System.out.println("-----------getAuthor:"+blog.getAuthor().toString());
         // 如果 aggressiveLazyLoading = true ，也会触发加载，否则不会
         //System.out.println("-----------getName:"+blog.getName());
+        session.close();
     }
 
     /**
@@ -176,7 +174,7 @@ public class V2_mybatis_TEST {
      * @throws IOException
      */
     @Test
-    public void testSelectBlogWithComment() throws IOException {
+    public void E_testSelectBlogWithComment() throws IOException {
         SqlSession session = sqlSessionFactory.openSession();
         try {
             BlogExtMapper mapper = session.getMapper(BlogExtMapper.class);
@@ -192,16 +190,37 @@ public class V2_mybatis_TEST {
      * 嵌套结果，不存在N+1问题:
      */
     @Test
-    public void testSelectBlogWithAuthorResult() throws IOException {
+    public void F_testSelectBlogWithAuthorResult() throws IOException {
         SqlSession session = sqlSessionFactory.openSession();
         BlogExtMapper mapper = session.getMapper(BlogExtMapper.class);
 
         BlogAndAuthor blog = mapper.selectBlogWithAuthorResult(2);
         System.out.println("-----------:"+blog);
+        session.close();
     }
 
 
-//    /**测试逻辑分页*/
-//    @Test
-//    public void
+    /**测试逻辑分页+物理分页
+     * 物理分页只需要pom.xml中增加pageHelper的引用，然后在mybatis-config中配置
+     * 拦截器即可生效*/
+    @Test
+    public void G_testSelectByRowBounds(){
+        SqlSession session = sqlSessionFactory.openSession();
+
+        //每次查询两条记录，逻辑分页实际上是每次从查询的结果中提取两条
+        //而物理分页是改写sql语句，真正只查一条
+        for( int start = 0,pagesize = 2;;start+=pagesize) {
+            RowBounds rb = new RowBounds(start, pagesize);
+
+            BlogExtMapper mapper = session.getMapper(BlogExtMapper.class);
+            List<Blog> blogs = mapper.selectByAuthorId(1001, rb);//不需要改sql语句
+
+            for (Blog blog : blogs) {
+                System.out.println(blog.getBid());
+            }
+            if(blogs.size()<pagesize){//说明查完了
+                break;
+            }
+        }
+    }
 }
