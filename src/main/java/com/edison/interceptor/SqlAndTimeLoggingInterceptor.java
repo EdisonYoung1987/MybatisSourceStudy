@@ -1,15 +1,14 @@
 package com.edison.interceptor;
 
-import com.alibaba.druid.pool.DruidPooledPreparedStatement;
-import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
+import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.session.ResultHandler;
 
 import java.lang.reflect.Method;
-import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Properties;
 
 /**打印最终执行的sql以及耗时，将StatementHandler作为拦截对象*/
@@ -35,25 +34,22 @@ public class SqlAndTimeLoggingInterceptor implements Interceptor{
 
         //获取执行时间
         long startTime=System.currentTimeMillis();
-        Object result=method.invoke(target,args); //执行原方法
+//        Object result=method.invoke(target,args); //执行原方法
+        Object result=invocation.proceed();//保证插件链的层次调用
         long endTime=System.currentTimeMillis();
 
         //获取sql
-        ParameterHandler parameterHandler=((StatementHandler)target).getParameterHandler();
-        parameterHandler.setParameters((PreparedStatement) statement);
+        BoundSql boundSql=((StatementHandler)target).getBoundSql();
+        String sql=boundSql.getSql();//这个还是?,不是具体值
 
-        String sql="";
-        ((DruidPooledPreparedStatement) st).getParameterMetaData();
-        System.out.println(st.getClass().getSimpleName());
-        if(st instanceof DruidPooledPreparedStatement){
-
-            sql=((DruidPooledPreparedStatement) st).getSql();
-        }else {
-            BoundSql boundSql=((StatementHandler)target).getParameterHandler().getBoundSql();//这个还是?,不是具体值
-            sql=boundSql.getSql();
-        }
+        Object parameterObject = boundSql.getParameterObject(); //sql语句的parameterType
+        List<ParameterMapping> parameterMappingList = boundSql.getParameterMappings();//每个#{}或${}的映射关系？？
 
         sql=sql.replaceAll("\n"," ").replaceAll("  *"," ");
+
+        //处理sql中的占位符
+        sql=setParameter(sql,parameterObject,parameterMappingList);
+
         String info=sql+",耗时："+(endTime-startTime)+"毫秒!";
         if((endTime-startTime)>=sqlTime){
             System.err.println("慢sql:"+info);
@@ -61,6 +57,41 @@ public class SqlAndTimeLoggingInterceptor implements Interceptor{
             System.err.println("执行sql:"+info);
 
         return result;
+    }
+
+    /**设置sql的占位符为具体值*/
+    private String setParameter(String sql, Object parameterObject, List<ParameterMapping> parameterMappingList) {
+        if(parameterObject==null || parameterMappingList==null||parameterMappingList.isEmpty()){//无参的情形
+            return sql;
+        }
+        //TODO 还有foreach等场景
+        // 通用场景，比如传的是一个自定义的对象或者八种基本数据类型之一或者String
+        Class<?> clzaa=parameterObject.getClass();
+        if(clzaa==Integer.class){ //TODO 实际上还有其他7种没有加
+            return  sql.replaceAll("\\?",parameterObject.toString());
+        }
+        if(clzaa.isPrimitive()){//8种基本类型+void
+            if(clzaa==Void.TYPE){
+                return sql;
+            }
+            return  sql.replaceAll("\\?",parameterObject.toString());
+        }
+        if(parameterObject instanceof  String){
+            return  sql.replaceAll("\\?","'"+parameterObject.toString()+"'");
+        }
+        for(ParameterMapping pm:parameterMappingList){
+            String property=pm.getProperty();//#{xxx} 里面的xxx
+            String value="?";
+            try {
+                Method method = parameterObject.getClass().getMethod("get" + property.substring(0, 1).toUpperCase()
+                        + property.substring(1), new Class[]{});
+                method.invoke(parameterObject);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            sql.replaceFirst("\\?",value);
+        }
+         return sql;
     }
 
     @Override
