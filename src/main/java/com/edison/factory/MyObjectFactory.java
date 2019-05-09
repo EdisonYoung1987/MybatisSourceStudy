@@ -12,7 +12,7 @@ public class MyObjectFactory extends DefaultObjectFactory {
     public <T> T create(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
         T obj= super.create(type, constructorArgTypes, constructorArgs);
         if(type.isAssignableFrom(Blog.class)){
-            System.out.println("Blog(xxx...)被创建:"+((Blog)obj).getBid());
+//            System.out.println("Blog(xxx...)被创建:"+((Blog)obj).getBid());
             ((Blog)obj).setAuthorId(9999); //会被覆盖
             //如果查询结果为null并且没有设置对该字段的typeHandler，则会生效
             ((Blog)obj).setName("Object Factory处理过的名字");

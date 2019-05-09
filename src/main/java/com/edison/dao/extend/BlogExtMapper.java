@@ -45,4 +45,8 @@ public interface BlogExtMapper extends BlogMapper {
 
     /**逻辑分页RowBounds*/
     public List<Blog> selectByAuthorId(Integer authorId, RowBounds rb);
+
+    public default void  printaa(){
+        System.out.println("aa");
+    }
 }

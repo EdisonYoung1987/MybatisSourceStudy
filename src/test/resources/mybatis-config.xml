@@ -10,7 +10,9 @@
 
     <settings>
         <!-- 打印查询语句 -->
+<!--
         <setting name="logImpl" value="STDOUT_LOGGING" />
+-->
         <setting name="localCacheScope" value="STATEMENT"/>
         <!--避免插入字段值为null时抛异常-->
         <setting name="jdbcTypeForNull" value="NULL"/>
@@ -35,6 +37,10 @@
 
     <!--分页插件的注册-->
     <plugins>
+        <!--自定义插件：用于打印sql并统计耗时 sqlTime：慢sql阈值，单位毫秒-->
+        <plugin interceptor="com.edison.interceptor.SqlAndTimeLoggingInterceptor">
+            <property name="sqlTime" value="10"/>
+        </plugin>
         <plugin interceptor="com.github.pagehelper.PageInterceptor">
             <!-- 4.0.0以后版本可以不设置该参数 ,可以自动识别
             <property name="dialect" value="mysql"/>  -->
