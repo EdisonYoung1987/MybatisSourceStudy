@@ -1,5 +1,8 @@
 import com.edison.v1_jdbc.util.ConnectionUtil;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.sql.Connection;
