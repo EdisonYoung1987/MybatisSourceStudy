@@ -25,8 +25,8 @@ public class ConnectionUtil {
 		driver=property.getProperty("driver");
 		url=property.getProperty("url");
 		user=property.getProperty("username");
-		password=property.getProperty("password");	
-		Class.forName(driver);
+		password=property.getProperty("password");
+
 		System.out.println("初始化init()完成");
 		System.out.println("driver="+driver);
 		System.out.println("url="+url);
@@ -42,8 +42,8 @@ public class ConnectionUtil {
 				e.printStackTrace();
 				return null;
 			}
-			
 		}
+		//		Class.forName(driver); 这个现在应该已经不使用了，JAVA SPI直接就进行了加载
 		Connection con=threadLocal.get();
 		System.out.println("获取连接开始");
 		if(con==null){

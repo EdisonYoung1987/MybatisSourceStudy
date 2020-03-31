@@ -29,6 +29,7 @@ public class V2_mybatis_TEST {
         InputStream inputStream = null;
         try {
             inputStream = Resources.getResourceAsStream(resource);
+            inputStream = ClassLoader.getSystemResourceAsStream(resource);
         } catch (IOException e) {
             e.printStackTrace();
             return;
@@ -40,7 +41,7 @@ public class V2_mybatis_TEST {
     /**mybatis的基础使用*/
     @Test
     public void A_baseUse() {
-        SqlSession session = sqlSessionFactory.openSession();
+        SqlSession session = sqlSessionFactory.openSession(ExecutorType.REUSE);
         try {
             //使用mybatis已有的sql
             System.out.println("使用自带的mapper中的sql");
@@ -118,7 +119,7 @@ public class V2_mybatis_TEST {
     /**测试mybatis的批量插入*/
     @Test
     public void C_insertBatch(){
-        //制定执行器类型为BATCH,其他的还有SIMPLE\REUSER,关闭自动提交
+        //制定执行器类型为BATCH,其他的还有SIMPLE\REUSE,关闭自动提交
 //        SqlSession session = sqlSessionFactory.openSession(ExecutorType.SIMPLE,false);
 //        SqlSession session = sqlSessionFactory.openSession(ExecutorType.REUSE,false);
         SqlSession session = sqlSessionFactory.openSession(ExecutorType.BATCH,false);

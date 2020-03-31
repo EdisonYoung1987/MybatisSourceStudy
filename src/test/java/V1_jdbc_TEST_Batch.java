@@ -5,10 +5,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 /**尝试批量操作：
  * 使用statement、PrepareStatement、PrepareStatement+batch进行对比
@@ -101,5 +98,42 @@ public class V1_jdbc_TEST_Batch {
         long endTime=System.currentTimeMillis();
         System.out.println("使用PrepareStatement+batch插入BATCHSIZE0条数据耗时:"+(endTime-startTime)/1000+"秒");
         ConnectionUtil.closeStatement(pst);
+    }
+
+    /**测试PrepareStatement是如何防止注入的
+     * */
+    @Test
+    public void testPrepareStatement() throws SQLException {
+        String sqlS="select * from author where author_id=";
+        Statement st=con.createStatement();
+        if(st.execute(sqlS+1001)){
+            ResultSet rs=st.getResultSet();
+            while(rs.next()) {
+                System.out.println("       "+rs.getString(1) + "  " + rs.getString(2));
+            }
+        }
+
+        //模拟sql注入
+        if(st.execute(sqlS+"1001 or 1=1")){
+            ResultSet rs=st.getResultSet();
+            System.out.println("sql注入后...");
+            while(rs.next()) {
+                System.out.println("       "+rs.getString(1) + "  " + rs.getString(2));
+            }
+        }
+
+        //看PreparedStatement如何防止注入
+        String sqlPre="select * from author where author_id=?";
+        PreparedStatement pst=con.prepareStatement(sqlPre);
+
+        pst.setString(1,"1001 or 1=1");
+        if(pst.execute()) {
+            ResultSet rs = pst.getResultSet();
+            System.out.println("sql注入PreparedStatement后...");
+            while(rs.next()) {
+                System.out.println("       "+rs.getString(1) + "  " + rs.getString(2));
+            }
+        }
+
     }
 }
